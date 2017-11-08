@@ -1,51 +1,30 @@
 <!DOCTYPE html>
-<html >
-<head>
-  <meta charset="UTF-8">
-  <title>Records</title>
-  
-  
-  
-      <link rel="stylesheet" href="css/style.css">
+<html>
+  <head>
+    <meta charset="UTF-8">
+    <title>Hello World!</title>
+    <style>
+    input:invalid {
+  border: 2px dashed red;
+}
 
-  
-</head>
+input:valid {
+  border: 2px solid black;
+}
+    </style>
+  </head>
+  <body>
+    <h1>Hello World!</h1>
+    <!-- All of the Node.js APIs are available in this renderer process. -->
+    We are using Node.js <script>document.write(process.versions.node)</script>,
+    Chromium <script>document.write(process.versions.chrome)</script>,
+    and Electron <script>document.write(process.versions.electron)</script>.
+<div id="label"></div>
+<input id="user"></input>
 
-<body>
-  <!--
-AUTOCOMPLETE:
-<input value="test" list="country"/>
-<datalist id="country">
-
-                <option value="U.S.">
-                <option value="France">
-                <option value="China">
-                <option value="Cambodia">
-                <option value="Chile">
-                <option value="Canada">
-                <option value="Poland">
-
-              </datalist>
--->
-<table>
-  <tr>
-    <th>Name</th>
-    <th>Intensity</th>
-    <th>Date</th>
-    <th>Time</th>
-    <th>Category</th>
-  </tr>
-  <tr id="newEntry">
-    <th><input id="newName" value="" list=""/></th>
-    <th><input id="newIntensity" value="" list=""/></th>
-    <th><input id="newDate" value="" list=""/></th>
-    <th><input id="newTime" value="" list=""/></th>
-    <th><input id="newCategory" value="" list=""/></th>
-  </tr>
-</table>
-  <script src='https://cdnjs.cloudflare.com/ajax/libs/jquery/3.2.1/jquery.min.js'></script>
-
-    <script  src="js/index.js"></script>
-
-</body>
+    <script>
+      // You can also require other files to run in this process
+      require('./renderer.js')
+    </script>
+  </body>
 </html>
