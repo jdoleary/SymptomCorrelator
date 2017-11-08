@@ -54,6 +54,7 @@ function getNextQ(){
         // restart and save
         qIndex = 0;
         data.data.push(_.map(questions, 'a'));
+        updateHistory();
         save(data);
         return questions[qIndex];
     }
@@ -63,13 +64,25 @@ function invalid(){
 }
 let qIndex = 0;
 let questions = [
-{q:'Event?',a:''},
+{q:'Event',a:''},
 {q:'Date',a:'',type:'date'}
 ];
+function updateHistory(){
+    const hist = document.querySelector('#history');
+    hist.innerHTML = "";
+    for(let i = 0; i < data.data.length; i++){
+        
+        var newDiv = document.createElement("div"); 
+        newDiv.innerHTML = data.data[i];
+        hist.appendChild(newDiv);
+    }
+    
+}
 ready(()=>{
     
     var content=fs.readFileSync("./tmp/data.json", "utf8");
     data =(JSON.parse(content));
+    updateHistory();
     
     
     label = document.querySelector('#label');
