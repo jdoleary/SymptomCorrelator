@@ -28,6 +28,14 @@ function ask(q, wait){
 }
 function answer(a){
     console.log(a);
+    if(questions[qIndex].type == 'date'){
+        let date = new Date(a);
+        if(date.toString() != 'Invalid Date'){
+            a = date;
+        }else{
+            return invalid();
+        }
+    }
     questions[qIndex].a = a;
     userInput.value = "";
     let isValid = true;
@@ -50,10 +58,13 @@ function getNextQ(){
         return questions[qIndex];
     }
 }
+function invalid(){
+    label.innerHTML = 'Invalid, try again: ' + label.innerHTML;
+}
 let qIndex = 0;
 let questions = [
 {q:'Event?',a:''},
-{q:'Date',a:''}
+{q:'Date',a:'',type:'date'}
 ];
 ready(()=>{
     
