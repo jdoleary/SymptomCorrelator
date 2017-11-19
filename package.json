@@ -1,26 +1,22 @@
 {
-  "name": "electron-quick-start",
+  "name": "Symptom Correlator",
   "version": "1.0.0",
-  "description": "A minimal Electron application",
+  "description": "",
   "main": "main.js",
   "scripts": {
-    "start": "electron ."
+    "start": "electron .",
+    "test": "mocha"
   },
-  "repository": "https://github.com/electron/electron-quick-start",
-  "keywords": [
-    "Electron",
-    "quick",
-    "start",
-    "tutorial",
-    "demo"
-  ],
-  "author": "GitHub",
-  "license": "CC0-1.0",
+  "repository": "https://github.com/jdoleary/SymptomCorrelator.git",
+  "keywords": [],
+  "author": "Jordan O'Leary <jdoleary@gmail.com> (https://jdoleary.me/)",
+  "license": "MIT",
   "devDependencies": {
-    "electron": "~1.7.8"
+    "electron": "~1.7.8",
+    "mocha": "^4.0.1"
   },
   "dependencies": {
-    "fuzzytimeinput": "^1.0.4",
+    "fuzzytimeinput": "^1.0.6",
     "lodash": "^4.17.4"
   }
 }

@@ -174,8 +174,16 @@ function getDefaultAnswer(){
       return new Date();
       break;
     case 'time':
-      const now = new Date();
-      return now.getHours() + ':' + now.getMinutes();
+      // Get closest time answer to input
+      debugger;
+      let answer = fuzzytimeinput(userInput.value);
+      if(!answer){
+        // if there is no closest answer, pass current time:
+        const now = new Date();
+        return now.getHours() + ':' + now.getMinutes();
+      }else{
+        return answer;
+      }
     case 'yesorno':
       return null;
     case 'entry':

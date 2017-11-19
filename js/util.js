@@ -1,6 +1,9 @@
 const util = {
   autoComplete: 
     function autoComplete(input,list){
+      if(!input || input.length == 0){
+        return null;
+      }
       const results = [];
       const inList = JSON.parse(JSON.stringify(list));
       inList.sort();
