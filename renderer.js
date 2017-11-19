@@ -3,7 +3,14 @@ const _ = require('lodash');
 const fuzzytimeinput = require("fuzzytimeinput");
 const jutil = require('./js/util');
 
-let data;
+// Initial test values:
+let data = {
+  entries:[
+    'headache',
+    'back pain'
+  ],
+  data:[]
+};
 let label, error, userInput;
 let waitForEnter = false;
 function save(output){
@@ -86,7 +93,7 @@ function getNextQ(){
         qIndex = 0;
         data.data.push(_.map(questions, 'a'));
         updateHistory();
-        save(data);
+        save(data.data);
         questionCurrent = questions[qIndex];
         return questionCurrent;
     }
@@ -111,21 +118,41 @@ function updateHistory(){
     
 }
 ready(()=>{
-    let content;
+    
+  
+    let dataContent;
+    let entriesContent;
     try{
-      content=fs.readFileSync("./tmp/data.json", "utf8");
-    }catch(e){}
-    if(content && content.length){
-      data =(JSON.parse(content));
-    }else{
-      data = {
-        entries:[
-          'headache',
-          'back pain'
-        ],
-        data:[]
-      };
+      dataContent=fs.readFileSync("./tmp/data.json", "utf8");
+      entriesContent=fs.readFileSync("./tmp/entries.json", "utf8");
+      // Make backups of data: 
+      if(dataContent && dataContent.length){
+        fs.writeFile("./data-backups/data.json.bak", dataContent, 'utf8', function (err) {
+          if (err) {
+              return console.log(err);
+          }
+          console.log("./data-backups/data.json.bak backup created.");
+        }); 
+      }
+      if(entriesContent && entriesContent.length){
+        fs.writeFile("./data-backups/entries.json.bak", entriesContent, 'utf8', function (err) {
+          if (err) {
+              return console.log(err);
+          }
+          console.log("./data-backups/entries.json.bak backup created.");
+        }); 
+      }
+    }catch(e){
+      console.error(e);
     }
+    
+    if(dataContent && dataContent.length){
+      data.data = (JSON.parse(dataContent).data);
+    }
+    if(entriesContent && entriesContent.length){
+      data.entries =(JSON.parse(entriesContent).entries);
+    }
+    
     updateHistory();
     
     
@@ -175,18 +202,19 @@ function getDefaultAnswer(){
       break;
     case 'time':
       // Get closest time answer to input
-      debugger;
-      let answer = fuzzytimeinput(userInput.value);
-      if(!answer){
+      if(!userInput.value){
         // if there is no closest answer, pass current time:
         const now = new Date();
-        return now.getHours() + ':' + now.getMinutes();
+        return fuzzytimeinput(now.getHours() + ':' + now.getMinutes());
       }else{
-        return answer;
+        return fuzzytimeinput(userInput.value);
       }
     case 'yesorno':
       return null;
     case 'entry':
+      if(!userInput.value){
+        return null;
+      }
       let autoComp = jutil.autoComplete(userInput.value,data.entries);
       if(autoComp.length){
         return autoComp[0];
