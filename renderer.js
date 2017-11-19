@@ -42,7 +42,7 @@ function fillAnswer(a){
     switch(questionCurrent.type){
       case 'date':
         // transform date:
-        a = jutil.formatMMDDYYYY(a);
+        a = jutil.formatMMDDYYYY(new Date(a));
         break;
       case 'time':
         // transform time:
@@ -93,7 +93,7 @@ function getNextQ(){
         qIndex = 0;
         data.data.push(_.map(questions, 'a'));
         updateHistory();
-        save(data.data);
+        save({data:data.data});
         questionCurrent = questions[qIndex];
         return questionCurrent;
     }
@@ -118,22 +118,10 @@ function updateHistory(){
     
 }
 ready(()=>{
-    
-  
     let dataContent;
     let entriesContent;
     try{
-      dataContent=fs.readFileSync("./tmp/data.json", "utf8");
       entriesContent=fs.readFileSync("./tmp/entries.json", "utf8");
-      // Make backups of data: 
-      if(dataContent && dataContent.length){
-        fs.writeFile("./data-backups/data.json.bak", dataContent, 'utf8', function (err) {
-          if (err) {
-              return console.log(err);
-          }
-          console.log("./data-backups/data.json.bak backup created.");
-        }); 
-      }
       if(entriesContent && entriesContent.length){
         fs.writeFile("./data-backups/entries.json.bak", entriesContent, 'utf8', function (err) {
           if (err) {
@@ -145,7 +133,20 @@ ready(()=>{
     }catch(e){
       console.error(e);
     }
-    
+    try{
+      dataContent=fs.readFileSync("./tmp/data.json", "utf8");
+      // Make backups of data: 
+      if(dataContent && dataContent.length){
+        fs.writeFile("./data-backups/data.json.bak", dataContent, 'utf8', function (err) {
+          if (err) {
+              return console.log(err);
+          }
+          console.log("./data-backups/data.json.bak backup created.");
+        }); 
+      }
+    }catch(e){
+      console.error(e);
+    }
     if(dataContent && dataContent.length){
       data.data = (JSON.parse(dataContent).data);
     }
@@ -178,7 +179,6 @@ ready(()=>{
       showAutoCompleteHint(getDefaultAnswer());
     }
     document.onkeypress = function (e) {
-      console.log('press: ' , e.keyCode);
         e = e || window.event;
         if(waitForEnter){
             if(e.code == 'Enter'){
@@ -198,7 +198,13 @@ ready(()=>{
 function getDefaultAnswer(){
   switch(questionCurrent.type){
     case 'date':
-      return new Date();
+      // Get closest data answer to input
+      if(!userInput.value){
+        // if there is no closest answer, pass current date:
+        return new Date();
+      }else{
+        return jutil.formatMMDDYYYY(new Date(userInput.value));
+      }
       break;
     case 'time':
       // Get closest time answer to input
