@@ -1,6 +1,9 @@
 const fs = require('fs');
 const _ = require('lodash');
-let data = {data:[]};
+const fuzzytimeinput = require("fuzzytimeinput");
+const jutil = require('./js/util');
+
+let data;
 let label, error, userInput;
 let waitForEnter = false;
 function save(output){
@@ -28,34 +31,51 @@ function ask(q, wait){
 }
 
 function fillAnswer(a){
+    // Normalize inputs:
+    switch(questionCurrent.type){
+      case 'date':
+        // transform date:
+        a = jutil.formatMMDDYYYY(a);
+        break;
+      case 'time':
+        // transform time:
+        a = fuzzytimeinput(a);
+        break;
+    }
     questionCurrent.a = a;
     userInput.value = "";
-    let isValid = true;
-    if(isValid){
+    let validCheck = validate(a);
+    if(validCheck.valid){
         let nextQ = getNextQ();
         if(nextQ){
             ask(nextQ,true);
         }
+    }else{
+      error.innerHTML = validCheck.msg;
     }
-  
+    
+    showAutoCompleteHint(getDefaultAnswer());
 }
-function inputAnswer(a){
+function validate(a){
     switch(questionCurrent.type){
       case 'date':
         let date = new Date(a);
         if(date.toString() != 'Invalid Date'){
-            fillAnswer(a);
-            return;
+          return {valid:true};
         }else{
-            invalid();
-            return;
+          return {valid:false,msg:'Invalid date'};
         }
         break;
-      case 'time':
-      case 'yesorno':
+      case 'entry':
+        if(data.entries.indexOf(a) != -1){
+          return {valid:true};
+        }else{
+          return {valid:false,msg:'Entry does not exist in the list of possible entries'};
+        }
+        break;
       default:
-        fillAnswer(a);
-    }    
+        return {valid:true};
+    }
 }
 function getNextQ(){
     if(++qIndex < questions.length){
@@ -71,12 +91,10 @@ function getNextQ(){
         return questionCurrent;
     }
 }
-function invalid(){
-    error.innerHTML = 'Invalid, try again: ';
-}
+
 let qIndex = 0;
 let questions = [
-{q:'Event',a:'',required:true},
+{q:'Entry',a:'',type:'entry'},
 {q:'Negative of Event (y/n)',a:'',type:'yesorno'},
 {q:'Time',a:'',type:'time'},
 {q:'Date',a:'',type:'date'}
@@ -93,10 +111,20 @@ function updateHistory(){
     
 }
 ready(()=>{
-    
-    var content=fs.readFileSync("./tmp/data.json", "utf8");
-    if(content.length){
+    let content;
+    try{
+      content=fs.readFileSync("./tmp/data.json", "utf8");
+    }catch(e){}
+    if(content && content.length){
       data =(JSON.parse(content));
+    }else{
+      data = {
+        entries:[
+          'headache',
+          'back pain'
+        ],
+        data:[]
+      };
     }
     updateHistory();
     
@@ -107,53 +135,62 @@ ready(()=>{
     userInput = document.querySelector('#user');
     userInput.focus();
     
+    // Attempt to skip current input when TAB is pressed
+    document.onkeydown = function (e) {
+        var TABKEY = 9;
+        if(e.keyCode == TABKEY) {
+          // Skip current input with default, then refocus:
+          fillAnswer(getDefaultAnswer());
+          
+          userInput.focus();
+          e.preventDefault();
+          return false;
+        }
+    }
+    document.onkeyup = function(e){
+      showAutoCompleteHint(getDefaultAnswer());
+    }
     document.onkeypress = function (e) {
+      console.log('press: ' , e.keyCode);
         e = e || window.event;
         if(waitForEnter){
             if(e.code == 'Enter'){
-                inputAnswer(userInput.value);                
+                fillAnswer(userInput.value);                
             }
         }else{
             //answer immediately
-            inputAnswer(userInput.value);
+            fillAnswer(userInput.value);
         }
     };
-    
-    // Attempt to skip current input when TAB is pressed
-    // TODO: only tab, not mouseclick
-    userInput.addEventListener("blur", function( event ) {
-      console.log(event);
-        // unless question is required
-        if(questionCurrent.required){
-          invalid();
-        }else{
-          // Skip current input with default, then refocus:
-          fillAnswer((function getDefaultAnswer(){
-            switch(questionCurrent.type){
-              case 'date':
-                return formatMMDDYYYY(new Date());
-                break;
-              case 'time':
-                return '00:00';
-              case 'yesorno':
-                return null;
-              default:
-                // Attempt to fill answer with content of input box.
-                return userInput.value;
-            }
-          })());
-        }
-        userInput.focus();
-    }, true);
-    
-    
-    function formatMMDDYYYY(date){
-      return (date.getMonth() + 1) + 
-      "/" +  date.getDate() +
-      "/" +  date.getFullYear();
-    }
     
     //Entry point!:
     questionCurrent = questions[qIndex];
     ask(questionCurrent, true);
 });
+
+function getDefaultAnswer(){
+  switch(questionCurrent.type){
+    case 'date':
+      return new Date();
+      break;
+    case 'time':
+      const now = new Date();
+      return now.getHours() + ':' + now.getMinutes();
+    case 'yesorno':
+      return null;
+    case 'entry':
+      let autoComp = jutil.autoComplete(userInput.value,data.entries);
+      if(autoComp.length){
+        return autoComp[0];
+      }else{
+        return null;
+      }
+    default:
+      // Attempt to fill answer with content of input box.
+      return userInput.value;
+  }
+}
+      
+function showAutoCompleteHint(hint){
+  document.querySelector('#autocomplete').innerHTML = hint;
+}
