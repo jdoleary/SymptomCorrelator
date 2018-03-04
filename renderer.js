@@ -80,6 +80,13 @@ function validate(a){
           return {valid:false,msg:'Entry does not exist in the list of possible entries'};
         }
         break;
+      case '0to10':
+        asInt = parseInt(a);
+        if(asInt >= 0 && asInt <= 10){
+          return {valid:true};
+        }else{
+          return {valid:false,msg:'Value is not a number 0 - 10'};
+        }
       default:
         return {valid:true};
     }
@@ -101,10 +108,12 @@ function getNextQ(){
 
 let qIndex = 0;
 let questions = [
-{q:'Entry',a:'',type:'entry'},
-{q:'Negative of Event (y/n)',a:'',type:'yesorno'},
+{q:'Entry / Event',a:'',type:'entry'},
+{q:'0-10 (0 is worst, 10 is best)',a:'',type:'0to10'},
+// {q:'Negative of Event (y/n)',a:'',type:'yesorno'},
 {q:'Time',a:'',type:'time'},
-{q:'Date',a:'',type:'date'}
+{q:'Date',a:'',type:'date'},
+{q:'Notes',a:'',type:''}
 ];
 function updateHistory(){
     const hist = document.querySelector('#history');
